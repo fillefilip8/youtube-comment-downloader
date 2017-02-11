@@ -7,14 +7,63 @@ import json
 import requests
 import argparse
 import lxml.html
-
+import BaseHTTPServer
+from SimpleHTTPServer import SimpleHTTPRequestHandler
 from lxml.cssselect import CSSSelector
-
+from StringIO import StringIO
+from random import randint
 YOUTUBE_COMMENTS_URL = 'https://www.youtube.com/all_comments?v={youtube_id}'
 YOUTUBE_COMMENTS_AJAX_URL = 'https://www.youtube.com/comment_ajax'
 
 USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36'
 
+
+
+
+class http_handler(SimpleHTTPRequestHandler):
+    def do_POST(self):
+        if self.path == '/execute':
+            content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
+            post_data = self.rfile.read(content_length) # <--- Gets the data itself
+            print("Post Data: " + post_data)
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            
+            youtube_id = post_data.replace("url=", "")
+            print 'Downloading Youtube comments for video:', youtube_id
+            count = 0
+            data = {'comments': []}
+            
+            for comment in download_comments(youtube_id):
+                    #print >> fp, json.dumps(comment)
+                data['comments'].append(comment)
+                 #   json.dump([])
+                count += 1
+                sys.stdout.write('Downloaded %d comment(s)\r' % count)
+                sys.stdout.flush()
+            print '\nDone!'
+            self.end_headers()
+
+            data['count'] = len(data['comments'])
+
+            if data['count'] > 0:
+                data['randomComment'] = data['comments'][randint(0,len(data['comments']))]
+            else:
+                data['randomComment'] = data['comments'][0]
+            self.wfile.write(json.dumps(data))
+    def do_GET(self):
+        if self.path == '/':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+
+            self.wfile.write(open("index.html", "r").read())
+        
+            #self.wfile.write("Hello World")
+
+HandlerClass = http_handler
+ServerClass  = BaseHTTPServer.HTTPServer
+Protocol     = "HTTP/1.0"
 
 def find_value(html, key, num_chars=2):
     pos_begin = html.find(key) + len(key) + num_chars
@@ -126,35 +175,49 @@ def download_comments(youtube_id, sleep=1):
 
 
 def main(argv):
-    parser = argparse.ArgumentParser(add_help=False, description=('Download Youtube comments without using the Youtube API'))
-    parser.add_argument('--help', '-h', action='help', default=argparse.SUPPRESS, help='Show this help message and exit')
-    parser.add_argument('--youtubeid', '-y', help='ID of Youtube video for which to download the comments')
-    parser.add_argument('--output', '-o', help='Output filename (output format is line delimited JSON)')
-
-    try:
-        args = parser.parse_args(argv)
-
-        youtube_id = args.youtubeid
-        output = args.output
-
-        if not youtube_id or not output:
-            parser.print_usage()
-            raise ValueError('you need to specify a Youtube ID and an output filename')
-
-        print 'Downloading Youtube comments for video:', youtube_id
-        count = 0
-        with open(output, 'wb') as fp:
-            for comment in download_comments(youtube_id):
-                print >> fp, json.dumps(comment)
-                count += 1
-                sys.stdout.write('Downloaded %d comment(s)\r' % count)
-                sys.stdout.flush()
-        print '\nDone!'
 
 
-    except Exception, e:
-        print 'Error:', str(e)
-        sys.exit(1)
+
+    server_address = ('127.0.0.1', 3000)
+
+    HandlerClass.protocol_version = Protocol
+    httpd = ServerClass(server_address, HandlerClass)
+
+    sa = httpd.socket.getsockname()
+    print "Serving HTTP on", sa[0], "port", sa[1], "..."
+    httpd.serve_forever()
+  #  except KeyboardInterrupt:
+ #   print '^C received, shutting down the web server'
+ #   server.socket.close()
+  #  parser = argparse.ArgumentParser(add_help=False, description=('Download Youtube comments without using the Youtube API'))
+   # parser.add_argument('--help', '-h', action='help', default=argparse.SUPPRESS, help='Show this help message and exit')
+   # parser.add_argument('--youtubeid', '-y', help='ID of Youtube video for which to download the comments')
+  #  parser.add_argument('--output', '-o', help='Output filename (output format is line delimited JSON)')
+
+  #  try:
+  #      args = parser.parse_args(argv)
+#
+  #      youtube_id = args.youtubeid
+  #      output = args.output
+
+  #      if not youtube_id or not output:
+ #           parser.print_usage()
+  #          raise ValueError('you need to specify a Youtube ID and an output filename')
+
+  #      print 'Downloading Youtube comments for video:', youtube_id
+  #      count = 0
+   #     with open(output, 'wb') as fp:
+  #          for comment in download_comments(youtube_id):
+  #              print >> fp, json.dumps(comment)
+   #             count += 1
+   #             sys.stdout.write('Downloaded %d comment(s)\r' % count)
+   #             sys.stdout.flush()
+  #      print '\nDone!'
+
+
+  #  except Exception, e:
+   #     print 'Error:', str(e)
+  #      sys.exit(1)
 
 
 if __name__ == "__main__":

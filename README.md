@@ -1,5 +1,15 @@
 # youtube-comment-downloader
-Simple script for downloading Youtube comments without using the Youtube API. The output is in line delimited JSON.
+
+
+
+Basic website to get a random comment from a youtube video
+
+
+
+
+
+
+Uses: https://github.com/egbertbouman/youtube-comment-downloader
 
 ### Dependencies
 * Python 2.7+
@@ -14,15 +24,5 @@ The python packages can be installed with
     pip install cssselect
 
 ### Usage
-```
-usage: downloader.py [--help] [--youtubeid YOUTUBEID] [--output OUTPUT]
-
-Download Youtube comments without using the Youtube API
-
-optional arguments:
-  --help, -h            Show this help message and exit
-  --youtubeid YOUTUBEID, -y YOUTUBEID
-                        ID of Youtube video for which to download the comments
-  --output OUTPUT, -o OUTPUT
-                        Output filename (output format is line delimited JSON)
-```
+Just run the downloader.py file with python and a http server will be started.
+Visit http://127.0.0.1:3000/

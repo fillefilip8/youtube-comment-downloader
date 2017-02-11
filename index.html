@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+  <title>Random Youtube Comment</title>
+
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/css/materialize.min.css">
+</head>
+<body>
+	<header>
+  <nav class="light-blue lighten-1" role="navigation">
+    <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">Logo</a>
+      <ul class="right hide-on-med-and-down">
+       
+      </ul>
+
+      <ul id="nav-mobile" class="side-nav">
+        
+      </ul>
+      <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
+    </div>
+  </nav></header>
+   <main>
+  <div class="section no-pad-bot" id="index-banner">
+    <div class="container">
+      <br><br>
+      <h1 class="header center orange-text">Random Youtube Comment Fetcher</h1>
+      <div class="row center">
+        <h5 class="header col s12 light">Gets a random youtube comment from a video.</h5>
+      </div>
+      <div class="row center">
+      	
+      		<div class="input-field">
+      			<input required value="" id="url" type="text" class="validate">
+      			<label class="active" for="url">Youtube Video ID</label>
+    		</div>
+    		<button id="execute"  class="btn-large waves-effect waves-light orange">Get Comments</a>
+    		<button id="random"  class="btn-large waves-effect waves-light orange">Get Random Comment</a>
+      	<br><br>
+      	
+      
+
+    </div>
+
+   
+    <div class="row center">
+    	<div id="comment-box" class="card blue-grey darken-1">
+            <div class="card-content white-text">
+              <span class="card-title">Random Comment</span>
+              	<div id="content">
+              		<p id="user">User:</p>
+              		<p id="time">Time:</p>
+              		<p id="comment">Comment:</p>
+              	</div>
+               <div id="loading" class="progress">
+      				<div class="indeterminate"></div>
+  			   </div>
+            
+          </div> 
+        
+      	</div>
+    </div>
+  </div>
+   </div>
+    </div>
+</main>
+
+  
+    
+
+
+
+  <!--  Scripts-->
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/js/materialize.min.js"></script>
+<script>
+$(function(){
+$("#comment-box").hide();
+$("#content").hide();
+$("#random").hide();
+});
+var comments;
+$("#random").on('click', function(){
+	$("#loading").fadeIn();
+var r = Math.floor(Math.random() * comments.length);
+var randomComment = comments[r];
+$("#loading").fadeOut();
+
+  $("#user").text("User: " + randomComment.author);
+  $("#time").text("Time: " + randomComment.time);
+  $("#comment").text("Comment: " + randomComment.text);
+  $("#content").fadeIn(3000);
+});
+$("#execute").on('click', function(){
+	console.log("Fetching random comment");
+	$("#comment-box").fadeIn(3000);
+	$("#loading").fadeIn();
+$("#content").fadeOut();
+$("#random").fadeOut();
+	var v = $("#url").val();
+$.ajax({
+  method: "POST",
+  url: "http://127.0.0.1:3000/execute",
+  data: {"url": v},
+  timeout: 9999999
+}).done(function(json) {
+	comments = json.comments;
+	var randomComment = json.randomComment;
+  $("#loading").fadeOut();
+$("#random").fadeIn();
+  $("#user").text("User: " + randomComment.author);
+  $("#time").text("Time: " + randomComment.time);
+  $("#comment").text("Comment: " + randomComment.text);
+  $("#content").fadeIn(3000);
+});
+});
+</script>
+
+  </body>
+</html>
